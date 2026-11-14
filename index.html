@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="description" content="Microfinance & Loan Management CRM">
+    <title>Microfinance CRM</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏦</text></svg>">
+    <!-- SheetJS (xlsx) CDN -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF + autoTable CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- ==================== LOGIN SCREEN ==================== -->
+    <div id="login-screen" class="screen active" role="main" aria-label="Login Portal">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-icon" aria-hidden="true">🏦</div>
+                    <h1>Microfinance CRM</h1>
+                    <p class="login-subtitle">Secure Loan Management Portal</p>
+                </div>
+                <form id="login-form" class="login-form" novalidate>
+                    <div class="form-group">
+                        <label for="login-id">Login ID</label>
+                        <input type="text" id="login-id" name="loginId" autocomplete="username" required aria-required="true" placeholder="Enter your Login ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="login-password" name="password" autocomplete="current-password" required aria-required="true" placeholder="Enter your password">
+                            <button type="button" class="toggle-password" aria-label="Toggle password visibility" tabindex="-1">
+                                <span class="eye-open" aria-hidden="true">👁</span>
+                                <span class="eye-closed" aria-hidden="true" style="display:none;">🙈</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="login-error" class="error-message" aria-live="polite" style="display:none;"></div>
+                    <button type="submit" class="btn btn-primary btn-block btn-lg">Sign In</button>
+                </form>
+                <div id="first-run-setup" class="first-run-setup" style="display:none;" aria-live="polite">
+                    <div class="setup-banner">
+                        <span class="setup-icon" aria-hidden="true">⚙️</span>
+                        <strong>First Run Detected</strong>
+                    </div>
+                    <p class="setup-text">Default Super Admin credentials:</p>
+                    <div class="credentials-box">
+                        <div class="cred-row">
+                            <span class="cred-label">Login ID:</span>
+                            <code id="default-login-id">admin</code>
+                        </div>
+                        <div class="cred-row">
+                            <span class="cred-label">Password:</span>
+                            <code id="default-password">Admin@123</code>
+                        </div>
+                    </div>
+                    <p class="setup-warning">⚠️ Please change password immediately after first login.</p>
+                </div>
+                <footer class="login-footer">
+                    <p>v2.0.0 | GitHub Pages Compatible | Offline-First</p>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN APP (Hidden until login) ==================== -->
+    <div id="app-screen" class="screen" role="main" aria-label="CRM Dashboard" style="display:none;">
+        <!-- Top App Bar -->
+        <header class="app-bar" role="banner">
+            <div class="app-bar-left">
+                <button class="icon-btn" id="menu-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-drawer">
+                    <span class="material-icons" aria-hidden="true">☰</span>
+                </button>
+                <h1 class="app-title" id="app-title">Dashboard</h1>
+            </div>
+            <div class="app-bar-right">
+                <div class="user-avatar" id="user-avatar" aria-label="User menu">
+                    <span id="avatar-initial">A</span>
+                </div>
+                <div class="dropdown-menu" id="user-dropdown" role="menu" aria-hidden="true">
+                    <div class="dropdown-header">
+                        <span id="dropdown-name">Admin</span>
+                        <span id="dropdown-role" class="role-badge">Super Admin</span>
+                    </div>
+                    <hr class="dropdown-divider">
+                    <button class="dropdown-item" id="btn-profile" role="menuitem">
+                        <span class="item-icon" aria-hidden="true">👤</span> Profile
+                    </button>
+                    <button class="dropdown-item" id="btn-settings" role="menuitem">
+                        <span class="item-icon" aria-hidden="true">⚙️</span> Settings
+                    </button>
+                    <hr class="dropdown-divider">
+                    <button class="dropdown-item danger" id="btn-logout" role="menuitem">
+                        <span class="item-icon" aria-hidden="true">🚪</span> Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Drawer (Mobile) -->
+        <aside class="nav-drawer" id="nav-drawer" role="navigation" aria-label="Main navigation" aria-hidden="true">
+            <div class="drawer-header">
+                <div class="drawer-user">
+                    <div class="drawer-avatar" id="drawer-avatar">A</div>
+                    <div class="drawer-info">
+                        <span id="drawer-name">Admin</span>
+                        <span id="drawer-role" class="role-badge-sm">Super Admin</span>
+                    </div>
+                </div>
+            </div>
+            <nav class="drawer-nav" role="list">
+                <button class="nav-item active" data-view="dashboard" role="listitem" aria-selected="true">
+                    <span class="nav-icon" aria-hidden="true">📊</span> Dashboard
+                </button>
+                <button class="nav-item" data-view="daily" role="listitem">
+                    <span class="nav-icon" aria-hidden="true">📅</span> Daily Loans
+                </button>
+                <button class="nav-item" data-view="weekly" role="listitem">
+                    <span class="nav-icon" aria-hidden="true">📆</span> Weekly Loans
+                </button>
+                <button class="nav-item" data-view="borrowers" role="listitem">
+                    <span class="nav-icon" aria-hidden="true">👥</span> Borrowers
+                </button>
+                <button class="nav-item" data-view="loan-manager" role="listitem">
+                    <span class="nav-icon" aria-hidden="true">🗑️</span> Loan Manager
+                </button>
+                <button class="nav-item" data-view="reports" role="listitem">
+                    <span class="nav-icon" aria-hidden="true">📈</span> Reports
+                </button>
+                <hr class="nav-divider">
+                <button class="nav-item admin-only" data-view="user-management" role="listitem" style="display:none;">
+                    <span class="nav-icon" aria-hidden="true">👤</span> User Management
+                </button>
+                <button class="nav-item admin-only" data-view="sync-settings" role="listitem" style="display:none;">
+                    <span class="nav-icon" aria-hidden="true">☁️</span> Sync Settings
+                </button>
+            </nav>
+        </aside>
+        <div class="drawer-backdrop" id="drawer-backdrop" aria-hidden="true"></div>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="main-content" role="main">
+            <!-- ==================== DASHBOARD VIEW ==================== -->
+            <section id="view-dashboard" class="view active" aria-labelledby="dashboard-title">
+                <header class="view-header">
+                    <h2 id="dashboard-title">Dashboard</h2>
+                    <div class="view-actions">
+                        <button class="btn btn-secondary" id="btn-refresh-dashboard" aria-label="Refresh dashboard data">
+                            <span aria-hidden="true">🔄</span> Refresh
+                        </button>
+                    </div>
+                </header>
+                <div class="stats-grid" role="region" aria-label="Key metrics">
+                    <article class="stat-card">
+                        <div class="stat-icon" aria-hidden="true">👥</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-total-borrowers">0</span>
+                            <span class="stat-label">Total Borrowers</span>
+                        </div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon" aria-hidden="true">📋</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-active-loans">0</span>
+                            <span class="stat-label">Active Loans</span>
+                        </div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon" aria-hidden="true">💰</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-total-outstanding">₹0</span>
+                            <span class="stat-label">Total Outstanding</span>
+                        </div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon" aria-hidden="true">💵</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-today-collection">₹0</span>
+                            <span class="stat-label">Today's Collection</span>
+                        </div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon" aria-hidden="true">📅</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-week-collection">₹0</span>
+                            <span class="stat-label">This Week's Collection</span>
+                        </div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon" aria-hidden="true">⚠️</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-overdue-count">0</span>
+                            <span class="stat-label">Overdue Loans</span>
+                        </div>
+                    </article>
+                </div>
+                <div class="charts-row">
+                    <section class="chart-card" aria-labelledby="collection-chart-title">
+                        <h3 id="collection-chart-title">Collection Trend (7 Days)</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="collection-chart" aria-label="Daily collection bar chart"></canvas>
+                        </div>
+                    </section>
+                    <section class="chart-card" aria-labelledby="loan-type-chart-title">
+                        <h3 id="loan-type-chart-title">Loan Distribution</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="loan-type-chart" aria-label="Daily vs Weekly loan doughnut chart"></canvas>
+                        </div>
+                    </section>
+                </div>
+                <section class="recent-activity" aria-labelledby="recent-title">
+                    <header class="section-header">
+                        <h3 id="recent-title">Recent Activity</h3>
+                        <button class="btn btn-ghost btn-sm" id="btn-view-all-activity">View All</button>
+                    </header>
+                    <div class="table-responsive">
+                        <table class="data-table" id="recent-activity-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Borrower</th>
+                                    <th scope="col">Loan</th>
+                                    <th scope="col">Amount</th>
+                                    <th scope="col">Method</th>
+                                    <th scope="col">Collected By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-activity-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+
+            <!-- ==================== DAILY LOANS VIEW ==================== -->
+            <section id="view-daily" class="view" aria-labelledby="daily-title" hidden>
+                <header class="view-header">
+                    <h2 id="daily-title">Daily Loans</h2>
+                    <div class="view-actions">
+                        <button class="btn btn-primary" id="btn-add-daily-loan" aria-label="Add new daily loan">
+                            <span aria-hidden="true">➕</span> New Daily Loan
+                        </button>
+                    </div>
+                </header>
+                <div class="tab-bar" role="tablist" aria-label="Daily loan filters">
+                    <button class="tab-btn active" role="tab" aria-selected="true" data-daily-tab="not-paid" id="tab-daily-not-paid">
+                        🔴 Today Not Paid <span class="tab-badge" id="badge-daily-not-paid">0</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-daily-tab="paid" id="tab-daily-paid">
+                        🟢 Today Paid <span class="tab-badge" id="badge-daily-paid">0</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-daily-tab="active" id="tab-daily-active">
+                        📋 All Active <span class="tab-badge" id="badge-daily-active">0</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-daily-tab="cleared" id="tab-daily-cleared">
+                        🏁 Cleared <span class="tab-badge" id="badge-daily-cleared">0</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-daily-tab="audit" id="tab-daily-audit">
+                        💰 Collections Audit
+                    </button>
+                </div>
+                <div class="tab-panels">
+                    <!-- Not Paid Today -->
+                    <div class="tab-panel active" role="tabpanel" id="panel-daily-not-paid" aria-labelledby="tab-daily-not-paid">
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-daily-not-paid">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Mobile</th>
+                                        <th scope="col">Location</th>
+                                        <th scope="col">Principal</th>
+                                        <th scope="col">Installment</th>
+                                        <th scope="col">Paid Today</th>
+                                        <th scope="col">Outstanding</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-daily-not-paid"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Paid Today -->
+                    <div class="tab-panel" role="tabpanel" id="panel-daily-paid" aria-labelledby="tab-daily-paid" hidden>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-daily-paid">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Mobile</th>
+                                        <th scope="col">Amount Paid</th>
+                                        <th scope="col">Time</th>
+                                        <th scope="col">Method</th>
+                                        <th scope="col">Reference</th>
+                                        <th scope="col">Collected By</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-daily-paid"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- All Active -->
+                    <div class="tab-panel" role="tabpanel" id="panel-daily-active" aria-labelledby="tab-daily-active" hidden>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-daily-active">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Mobile</th>
+                                        <th scope="col">Location</th>
+                                        <th scope="col">Loan Date</th>
+                                        <th scope="col">Principal</th>
+                                        <th scope="col">Total Payable</th>
+                                        <th scope="col">Paid</th>
+                                        <th scope="col">Outstanding</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-daily-active"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Cleared -->
+                    <div class="tab-panel" role="tabpanel" id="panel-daily-cleared" aria-labelledby="tab-daily-cleared" hidden>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-daily-cleared">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Loan ID</th>
+                                        <th scope="col">Principal</th>
+                                        <th scope="col">Total Paid</th>
+                                        <th scope="col">Completed Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-daily-cleared"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Collections Audit -->
+                    <div class="tab-panel" role="tabpanel" id="panel-daily-audit" aria-labelledby="tab-daily-audit" hidden>
+                        <div class="audit-toolbar">
+                            <div class="date-range-picker">
+                                <label for="audit-daily-from">From</label>
+                                <input type="date" id="audit-daily-from">
+                                <label for="audit-daily-to">To</label>
+                                <input type="date" id="audit-daily-to">
+                                <button class="btn btn-secondary" id="btn-audit-daily-today">⚡ Today</button>
+                                <button class="btn btn-secondary" id="btn-audit-daily-week">📅 This Week</button>
+                                <button class="btn btn-secondary" id="btn-audit-daily-month">📆 This Month</button>
+                                <button class="btn btn-primary" id="btn-apply-daily-audit">Apply Filter</button>
+                                <button class="btn btn-outline" id="btn-export-daily-audit">📥 Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-daily-audit">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Loan ID</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Method</th>
+                                        <th scope="col">Reference</th>
+                                        <th scope="col">Collected By</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-daily-audit"></tbody>
+                            </table>
+                        </div>
+                        <div class="audit-summary" id="daily-audit-summary" aria-live="polite"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== WEEKLY LOANS VIEW ==================== -->
+            <section id="view-weekly" class="view" aria-labelledby="weekly-title" hidden>
+                <header class="view-header">
+                    <h2 id="weekly-title">Weekly Loans</h2>
+                    <div class="view-actions">
+                        <button class="btn btn-primary" id="btn-add-weekly-loan" aria-label="Add new weekly loan">
+                            <span aria-hidden="true">➕</span> New Weekly Loan
+                        </button>
+                    </div>
+                </header>
+                <div class="tab-bar" role="tablist" aria-label="Weekly loan filters">
+                    <button class="tab-btn active" role="tab" aria-selected="true" data-weekly-tab="not-paid" id="tab-weekly-not-paid">
+                        🔴 This Week Not Paid <span class="tab-badge" id="badge-weekly-not-paid">0</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-weekly-tab="paid" id="tab-weekly-paid">
+                        🟢 This Week Paid <span class="tab-badge" id="badge-weekly-paid">0</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-weekly-tab="active" id="tab-weekly-active">
+                        📋 All Active <span class="tab-badge" id="badge-weekly-active">0</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-weekly-tab="cleared" id="tab-weekly-cleared">
+                        🏁 Cleared <span class="tab-badge" id="badge-weekly-cleared">0</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-weekly-tab="audit" id="tab-weekly-audit">
+                        💰 Collections Audit
+                    </button>
+                </div>
+                <div class="tab-panels">
+                    <!-- Not Paid This Week -->
+                    <div class="tab-panel active" role="tabpanel" id="panel-weekly-not-paid" aria-labelledby="tab-weekly-not-paid">
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-weekly-not-paid">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Mobile</th>
+                                        <th scope="col">Location</th>
+                                        <th scope="col">Principal</th>
+                                        <th scope="col">Weekly Installment</th>
+                                        <th scope="col">Paid This Week</th>
+                                        <th scope="col">Outstanding</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-weekly-not-paid"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Paid This Week -->
+                    <div class="tab-panel" role="tabpanel" id="panel-weekly-paid" aria-labelledby="tab-weekly-paid" hidden>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-weekly-paid">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Mobile</th>
+                                        <th scope="col">Amount Paid</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Method</th>
+                                        <th scope="col">Reference</th>
+                                        <th scope="col">Collected By</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-weekly-paid"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- All Active -->
+                    <div class="tab-panel" role="tabpanel" id="panel-weekly-active" aria-labelledby="tab-weekly-active" hidden>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-weekly-active">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Mobile</th>
+                                        <th scope="col">Location</th>
+                                        <th scope="col">Loan Date</th>
+                                        <th scope="col">Principal</th>
+                                        <th scope="col">Total Payable</th>
+                                        <th scope="col">Paid</th>
+                                        <th scope="col">Outstanding</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-weekly-active"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Cleared -->
+                    <div class="tab-panel" role="tabpanel" id="panel-weekly-cleared" aria-labelledby="tab-weekly-cleared" hidden>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-weekly-cleared">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Loan ID</th>
+                                        <th scope="col">Principal</th>
+                                        <th scope="col">Total Paid</th>
+                                        <th scope="col">Completed Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-weekly-cleared"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Collections Audit -->
+                    <div class="tab-panel" role="tabpanel" id="panel-weekly-audit" aria-labelledby="tab-weekly-audit" hidden>
+                        <div class="audit-toolbar">
+                            <div class="date-range-picker">
+                                <label for="audit-weekly-from">From</label>
+                                <input type="date" id="audit-weekly-from">
+                                <label for="audit-weekly-to">To</label>
+                                <input type="date" id="audit-weekly-to">
+                                <button class="btn btn-secondary" id="btn-audit-weekly-today">⚡ Today</button>
+                                <button class="btn btn-secondary" id="btn-audit-weekly-week">📅 This Week</button>
+                                <button class="btn btn-secondary" id="btn-audit-weekly-month">📆 This Month</button>
+                                <button class="btn btn-primary" id="btn-apply-weekly-audit">Apply Filter</button>
+                                <button class="btn btn-outline" id="btn-export-weekly-audit">📥 Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-weekly-audit">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Loan ID</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Method</th>
+                                        <th scope="col">Reference</th>
+                                        <th scope="col">Collected By</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-weekly-audit"></tbody>
+                            </table>
+                        </div>
+                        <div class="audit-summary" id="weekly-audit-summary" aria-live="polite"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== BORROWERS VIEW ==================== -->
+            <section id="view-borrowers" class="view" aria-labelledby="borrowers-title" hidden>
+                <header class="view-header">
+                    <h2 id="borrowers-title">Borrowers</h2>
+                    <div class="view-actions">
+                        <button class="btn btn-primary" id="btn-add-borrower" aria-label="Add new borrower">
+                            <span aria-hidden="true">➕</span> Add Borrower
+                        </button>
+                        <button class="btn btn-secondary" id="btn-import-borrowers" aria-label="Import borrowers from Excel/CSV">
+                            <span aria-hidden="true">📥</span> Import
+                        </button>
+                        <button class="btn btn-outline" id="btn-export-borrowers" aria-label="Export borrowers to Excel/CSV">
+                            <span aria-hidden="true">📤</span> Export
+                        </button>
+                    </div>
+                </header>
+                <div class="search-bar">
+                    <input type="search" id="search-borrowers" placeholder="🔍 Search by name, mobile, S.No, or location..." aria-label="Search borrowers">
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="table-borrowers">
+                        <thead>
+                            <tr>
+                                <th scope="col">S.No</th>
+                                <th scope="col">Full Name</th>
+                                <th scope="col">Mobile</th>
+                                <th scope="col">Location</th>
+                                <th scope="col">Total Loans</th>
+                                <th scope="col">Total Outstanding</th>
+                                <th scope="col">Notes</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-borrowers"></tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="empty-borrowers" hidden>
+                    <div class="empty-icon" aria-hidden="true">👥</div>
+                    <h3>No borrowers yet</h3>
+                    <p>Add your first borrower to get started</p>
+                    <button class="btn btn-primary" id="btn-first-borrower">Add Borrower</button>
+                </div>
+            </section>
+
+            <!-- ==================== LOAN MANAGER (DELETE) VIEW ==================== -->
+            <section id="view-loan-manager" class="view" aria-labelledby="loan-manager-title" hidden>
+                <header class="view-header">
+                    <h2 id="loan-manager-title">🗑️ Loan Manager (Delete)</h2>
+                    <p class="view-subtitle">Permanently delete loans — action cannot be undone</p>
+                </header>
+                <div class="search-bar">
+                    <input type="search" id="search-loan-manager" placeholder="🔍 Search by borrower, loan ID, S.No..." aria-label="Search loans for deletion">
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="table-loan-manager">
+                        <thead>
+                            <tr>
+                                <th scope="col">Loan ID</th>
+                                <th scope="col">Borrower</th>
+                                <th scope="col">S.No</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Principal</th>
+                                <th scope="col">Total Payable</th>
+                                <th scope="col">Paid</th>
+                                <th scope="col">Outstanding</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-loan-manager"></tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="empty-loan-manager" hidden>
+                    <div class="empty-icon" aria-hidden="true">🗑️</div>
+                    <h3>No loans to manage</h3>
+                    <p>All loans have been cleared or deleted</p>
+                </div>
+            </section>
+
+            <!-- ==================== REPORTS VIEW ==================== -->
+            <section id="view-reports" class="view" aria-labelledby="reports-title" hidden>
+                <header class="view-header">
+                    <h2 id="reports-title">Reports & Analytics</h2>
+                </header>
+                <div class="reports-grid">
+                    <article class="report-card" aria-labelledby="report-collection-title">
+                        <h3 id="report-collection-title">📊 Collection Report</h3>
+                        <div class="report-controls">
+                            <label for="report-from">From</label>
+                            <input type="date" id="report-from">
+                            <label for="report-to">To</label>
+                            <input type="date" id="report-to">
+                            <button class="btn btn-primary" id="btn-gen-collection-report">Generate</button>
+                            <button class="btn btn-outline" id="btn-export-collection-report">📥 Export CSV</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-collection-report">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Daily Collections</th>
+                                        <th scope="col">Weekly Collections</th>
+                                        <th scope="col">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-collection-report"></tbody>
+                            </table>
+                        </div>
+                    </article>
+                    <article class="report-card" aria-labelledby="report-outstanding-title">
+                        <h3 id="report-outstanding-title">💰 Outstanding Report</h3>
+                        <button class="btn btn-primary" id="btn-gen-outstanding-report">Generate Report</button>
+                        <button class="btn btn-outline" id="btn-export-outstanding-report">📥 Export CSV</button>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-outstanding-report">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Loan ID</th>
+                                        <th scope="col">Type</th>
+                                        <th scope="col">Outstanding</th>
+                                        <th scope="col">Overdue Days</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-outstanding-report"></tbody>
+                            </table>
+                        </div>
+                    </article>
+                    <article class="report-card" aria-labelledby="report-fines-title">
+                        <h3 id="report-fines-title">⚠️ Late Fines Report</h3>
+                        <button class="btn btn-primary" id="btn-gen-fines-report">Generate Report</button>
+                        <button class="btn btn-outline" id="btn-export-fines-report">📥 Export CSV</button>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-fines-report">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Loan ID</th>
+                                        <th scope="col">Borrower</th>
+                                        <th scope="col">Fine Amount</th>
+                                        <th scope="col">Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-fines-report"></tbody>
+                            </table>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- ==================== USER MANAGEMENT VIEW (Super Admin Only) ==================== -->
+            <section id="view-user-management" class="view" aria-labelledby="user-mgmt-title" hidden>
+                <header class="view-header">
+                    <h2 id="user-mgmt-title">👤 User Management</h2>
+                    <p class="view-subtitle">Create and manage staff accounts with granular permissions</p>
+                </header>
+                <div class="user-mgmt-toolbar">
+                    <button class="btn btn-primary" id="btn-add-user" aria-label="Add new user">
+                        <span aria-hidden="true">➕</span> Add User
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="table-users">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Full Name</th>
+                                <th scope="col">Login ID</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Permissions</th>
+                                <th scope="col">Created</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-users"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ==================== SYNC SETTINGS VIEW (Super Admin Only) ==================== -->
+            <section id="view-sync-settings" class="view" aria-labelledby="sync-title" hidden>
+                <header class="view-header">
+                    <h2 id="sync-title">☁️ Cloud Sync Settings</h2>
+                    <p class="view-subtitle">Configure Google Sheets integration for cloud backup & multi-device sync</p>
+                </header>
+                <div class="settings-card">
+                    <h3>Google Sheets Integration</h3>
+                    <div class="form-group">
+                        <label for="gsheet-id">Google Spreadsheet ID</label>
+                        <input type="text" id="gsheet-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" aria-describedby="gsheet-id-help">
+                        <p id="gsheet-id-help" class="form-help">Found in the spreadsheet URL: <code>docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/edit</code></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="gscript-url">Apps Script Web App URL</label>
+                        <input type="url" id="gscript-url" placeholder="https://script.google.com/macros/s/AKfycbx.../exec" aria-describedby="gscript-url-help">
+                        <p id="gscript-url-help" class="form-help">Deploy Apps Script as Web App (Anyone with link) and paste the URL here</p>
+                    </div>
+                    <div class="sync-actions">
+                        <button class="btn btn-primary" id="btn-test-sync">🔗 Test Connection</button>
+                        <button class="btn btn-secondary" id="btn-sync-now">☁️ Sync Now</button>
+                        <button class="btn btn-outline" id="btn-pull-from-cloud">⬇️ Pull from Cloud</button>
+                    </div>
+                    <div id="sync-status" class="sync-status" aria-live="polite"></div>
+                </div>
+                <div class="settings-card">
+                    <h3>Local Data Management</h3>
+                    <div class="local-actions">
+                        <button class="btn btn-secondary" id="btn-export-full-backup">📦 Export Full Backup (.xlsx)</button>
+                        <button class="btn btn-secondary" id="btn-import-backup">📥 Import Backup (.xlsx/.csv)</button>
+                        <input type="file" id="backup-file-input" accept=".xlsx,.csv" hidden aria-label="Select backup file">
+                        <button class="btn btn-danger" id="btn-clear-local-data">🗑️ Clear All Local Data</button>
+                    </div>
+                    <p class="form-help">Backups include: Customers, Loans, Payments, Fines, Users</p>
+                </div>
+                <details class="settings-card">
+                    <summary>📋 Apps Script Code.gs (Copy & Paste)</summary>
+                    <pre id="apps-script-code"><code></code></pre>
+                    <button class="btn btn-outline btn-sm" id="btn-copy-apps-script">📋 Copy Code</button>
+                </details>
+            </section>
+
+            <!-- ==================== PROFILE VIEW ==================== -->
+            <section id="view-profile" class="view" aria-labelledby="profile-title" hidden>
+                <header class="view-header">
+                    <h2 id="profile-title">👤 Profile</h2>
+                </header>
+                <div class="profile-card">
+                    <div class="profile-avatar" id="profile-avatar">A</div>
+                    <h3 id="profile-name">Admin</h3>
+                    <span id="profile-role" class="role-badge">Super Admin</span>
+                    <div class="profile-details">
+                        <div class="detail-row"><span class="detail-label">Login ID:</span> <span id="profile-login-id">admin</span></div>
+                        <div class="detail-row"><span class="detail-label">Permissions:</span> <span id="profile-permissions">Full Access</span></div>
+                        <div class="detail-row"><span class="detail-label">Account Status:</span> <span id="profile-status" class="status-active">Active</span></div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn btn-secondary" id="btn-change-password">🔐 Change Password</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== SETTINGS VIEW ==================== -->
+            <section id="view-settings" class="view" aria-labelledby="settings-title" hidden>
+                <header class="view-header">
+                    <h2 id="settings-title">⚙️ Settings</h2>
+                </header>
+                <div class="settings-card">
+                    <h3>App Preferences</h3>
+                    <div class="form-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="setting-auto-backup" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Auto-backup to localStorage</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="setting-sound-enabled" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Sound notifications</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="setting-vibration-enabled">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Vibration on actions (mobile)</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="setting-currency">Currency Symbol</label>
+                        <input type="text" id="setting-currency" value="₹" maxlength="2">
+                    </div>
+                    <div class="form-group">
+                        <label for="setting-date-format">Date Display Format</label>
+                        <select id="setting-date-format">
+                            <option value="DD-MM-YYYY" selected>DD-MM-YYYY (14-11-2026)</option>
+                            <option value="DD/MM/YYYY">DD/MM/YYYY (14/11/2026)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="settings-card">
+                    <h3>Data & Privacy</h3>
+                    <button class="btn btn-outline" id="btn-export-my-data">📤 Export My Data (JSON)</button>
+                    <button class="btn btn-danger" id="btn-delete-account">🗑️ Delete My Account</button>
+                </div>
+                <div class="settings-card">
+                    <h3>About</h3>
+                    <p>Microfinance CRM v2.0.0</p>
+                    <p>Built for GitHub Pages • Offline-First • PWA Ready</p>
+                    <p><a href="https://github.com" target="_blank" rel="noopener">View on GitHub</a></p>
+                </div>
+            </section>
+        </main>
+
+        <!-- ==================== MOBILE BOTTOM NAVIGATION ==================== -->
+        <nav class="bottom-nav" id="bottom-nav" role="navigation" aria-label="Primary navigation">
+            <button class="bottom-nav-item active" data-view="dashboard" aria-label="Dashboard">
+                <span class="nav-icon" aria-hidden="true">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button class="bottom-nav-item" data-view="daily" aria-label="Daily Loans">
+                <span class="nav-icon" aria-hidden="true">📅</span>
+                <span class="nav-label">Daily</span>
+            </button>
+            <button class="bottom-nav-item" data-view="weekly" aria-label="Weekly Loans">
+                <span class="nav-icon" aria-hidden="true">📆</span>
+                <span class="nav-label">Weekly</span>
+            </button>
+            <button class="bottom-nav-item" data-view="borrowers" aria-label="Borrowers">
+                <span class="nav-icon" aria-hidden="true">👥</span>
+                <span class="nav-label">Borrowers</span>
+            </button>
+            <button class="bottom-nav-item" data-view="more" aria-label="More options">
+                <span class="nav-icon" aria-hidden="true">⋯</span>
+                <span class="nav-label">More</span>
+            </button>
+        </nav>
+
+        <!-- ==================== MORE MENU (Mobile) ==================== -->
+        <div class="more-menu" id="more-menu" role="dialog" aria-modal="true" aria-labelledby="more-menu-title" hidden>
+            <div class="more-menu-header">
+                <h3 id="more-menu-title">More</h3>
+                <button class="icon-btn" id="close-more-menu" aria-label="Close menu">✕</button>
+            </div>
+            <nav class="more-menu-nav" role="list">
+                <button class="more-menu-item" data-view="loan-manager" role="listitem">
+                    <span class="item-icon" aria-hidden="true">🗑️</span> Loan Manager
+                </button>
+                <button class="more-menu-item" data-view="reports" role="listitem">
+                    <span class="item-icon" aria-hidden="true">📈</span> Reports
+                </button>
+                <hr class="menu-divider">
+                <button class="more-menu-item admin-only" data-view="user-management" role="listitem" style="display:none;">
+                    <span class="item-icon" aria-hidden="true">👤</span> User Management
+                </button>
+                <button class="more-menu-item admin-only" data-view="sync-settings" role="listitem" style="display:none;">
+                    <span class="item-icon" aria-hidden="true">☁️</span> Sync Settings
+                </button>
+                <hr class="menu-divider">
+                <button class="more-menu-item" data-view="profile" role="listitem">
+                    <span class="item-icon" aria-hidden="true">👤</span> Profile
+                </button>
+                <button class="more-menu-item" data-view="settings" role="listitem">
+                    <span class="item-icon" aria-hidden="true">⚙️</span> Settings
+                </button>
+                <hr class="menu-divider">
+                <button class="more-menu-item danger" id="btn-logout-mobile" role="listitem">
+                    <span class="item-icon" aria-hidden="true">🚪</span> Logout
+                </button>
+            </nav>
+        </div>
+        <div class="more-menu-backdrop" id="more-menu-backdrop" hidden></div>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+    <!-- Borrower Modal -->
+    <div class="modal" id="modal-borrower" role="dialog" aria-modal="true" aria-labelledby="modal-borrower-title" hidden>
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-container">
+            <header class="modal-header">
+                <h3 id="modal-borrower-title">Add Borrower</h3>
+                <button class="modal-close" aria-label="Close modal">✕</button>
+            </header>
+            <form id="form-borrower" class="modal-form" novalidate>
+                <input type="hidden" id="borrower-sno" name="sNo">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="borrower-name">Full Name *</label>
+                        <input type="text" id="borrower-name" name="fullName" required maxlength="100" placeholder="Enter full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="borrower-mobile">Mobile *</label>
+                        <input type="tel" id="borrower-mobile" name="mobile" required maxlength="15" placeholder="Enter mobile number" pattern="[0-9+\-\s]{10,15}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="borrower-location">Location</label>
+                        <input type="text" id="borrower-location" name="location" maxlength="100" placeholder="City, Area">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="borrower-notes">Notes</label>
+                    <textarea id="borrower-notes" name="notes" rows="3" maxlength="500" placeholder="Additional notes..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Borrower</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loan Modal -->
+    <div class="modal" id="modal-loan" role="dialog" aria-modal="true" aria-labelledby="modal-loan-title" hidden>
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-container">
+            <header class="modal-header">
+                <h3 id="modal-loan-title">Issue New Loan</h3>
+                <button class="modal-close" aria-label="Close modal">✕</button>
+            </header>
+            <form id="form-loan" class="modal-form" novalidate>
+                <input type="hidden" id="loan-id" name="loanId">
+                <input type="hidden" id="loan-customer-id" name="customerId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="loan-borrower">Borrower *</label>
+                        <select id="loan-borrower" name="borrowerSelect" required aria-required="true">
+                            <option value="">Select borrower...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="loan-type">Repayment Type *</label>
+                        <select id="loan-type" name="repaymentType" required>
+                            <option value="DAILY">Daily (20% interest)</option>
+                            <option value="WEEKLY">Weekly (26% interest)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="loan-principal">Principal Amount (₹) *</label>
+                        <input type="number" id="loan-principal" name="principal" required min="100" max="10000000" step="100" placeholder="Enter principal">
+                    </div>
+                    <div class="form-group">
+                        <label for="loan-date">Loan Date *</label>
+                        <input type="text" id="loan-date" name="loanDate" required placeholder="DD-MM-YYYY" maxlength="10" pattern="\d{2}-\d{2}-\d{4}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Calculated Totals</label>
+                    <div class="calculated-totals">
+                        <div class="calc-row">
+                            <span>Interest Rate:</span>
+                            <strong id="calc-rate">20%</strong>
+                        </div>
+                        <div class="calc-row">
+                            <span>Total Payable:</span>
+                            <strong id="calc-total-payable">₹0</strong>
+                        </div>
+                        <div class="calc-row">
+                            <span>Daily Installment:</span>
+                            <strong id="calc-daily-installment">₹0</strong>
+                        </div>
+                        <div class="calc-row">
+                            <span>Weekly Installment:</span>
+                            <strong id="calc-weekly-installment">₹0</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Issue Loan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal" id="modal-payment" role="dialog" aria-modal="true" aria-labelledby="modal-payment-title" hidden>
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-container">
+            <header class="modal-header">
+                <h3 id="modal-payment-title">Record Payment</h3>
+                <button class="modal-close" aria-label="Close modal">✕</button>
+            </header>
+            <form id="form-payment" class="modal-form" novalidate>
+                <input type="hidden" id="payment-loan-id" name="loanId">
+                <input type="hidden" id="payment-customer-id" name="customerId">
+                <div class="payment-info" id="payment-info">
+                    <div class="info-row"><span>Borrower:</span> <strong id="pay-borrower-name">-</strong></div>
+                    <div class="info-row"><span>Loan ID:</span> <strong id="pay-loan-id">-</strong></div>
+                    <div class="info-row"><span>Type:</span> <strong id="pay-loan-type">-</strong></div>
+                    <div class="info-row"><span>Outstanding:</span> <strong id="pay-outstanding" class="text-danger">₹0</strong></div>
+                    <div class="info-row"><span>Suggested Installment:</span> <strong id="pay-suggested" class="text-primary">₹0</strong></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="payment-amount">Amount (₹) *</label>
+                        <input type="number" id="payment-amount" name="amount" required min="1" step="1" placeholder="Enter amount">
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-date">Date *</label>
+                        <input type="text" id="payment-date" name="paymentDate" required placeholder="DD-MM-YYYY" maxlength="10" pattern="\d{2}-\d{2}-\d{4}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="payment-method">Method *</label>
+                        <select id="payment-method" name="paymentMethod" required>
+                            <option value="Cash">💵 Cash</option>
+                            <option value="UPI">📱 UPI</option>
+                            <option value="Bank Transfer">🏦 Bank Transfer</option>
+                            <option value="Other">📦 Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-reference">Reference No.</label>
+                        <input type="text" id="payment-reference" name="referenceNo" maxlength="50" placeholder="UPI Ref / Cheque No.">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="payment-collected-by">Collected By *</label>
+                    <select id="payment-collected-by" name="collectedBy" required>
+                        <option value="">Select collector...</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Record Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Late Fine Modal -->
+    <div class="modal" id="modal-fine" role="dialog" aria-modal="true" aria-labelledby="modal-fine-title" hidden>
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-container">
+            <header class="modal-header">
+                <h3 id="modal-fine-title">Add Late Fine</h3>
+                <button class="modal-close" aria-label="Close modal">✕</button>
+            </header>
+            <form id="form-fine" class="modal-form" novalidate>
+                <input type="hidden" id="fine-loan-id" name="loanId">
+                <input type="hidden" id="fine-customer-id" name="customerId">
+                <div class="fine-info" id="fine-info">
+                    <div class="info-row"><span>Borrower:</span> <strong id="fine-borrower-name">-</strong></div>
+                    <div class="info-row"><span>Loan ID:</span> <strong id="fine-loan-id-display">-</strong></div>
+                    <div class="info-row"><span>Outstanding:</span> <strong id="fine-outstanding" class="text-danger">₹0</strong></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fine-amount">Fine Amount (₹) *</label>
+                        <input type="number" id="fine-amount" name="fineAmount" required min="1" step="1" placeholder="Enter fine amount">
+                    </div>
+                    <div class="form-group">
+                        <label for="fine-date">Date (When) *</label>
+                        <input type="text" id="fine-date" name="fineDate" required placeholder="DD-MM-YYYY" maxlength="10" pattern="\d{2}-\d{2}-\d{4}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="fine-reason">Reason (Why) *</label>
+                    <textarea id="fine-reason" name="reason" required rows="3" maxlength="200" placeholder="Enter reason for late fine..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Add Fine</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal" id="modal-user" role="dialog" aria-modal="true" aria-labelledby="modal-user-title" hidden>
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-container modal-lg">
+            <header class="modal-header">
+                <h3 id="modal-user-title">Add User</h3>
+                <button class="modal-close" aria-label="Close modal">✕</button>
+            </header>
+            <form id="form-user" class="modal-form" novalidate>
+                <input type="hidden" id="user-id" name="userId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="user-fullname">Full Name *</label>
+                        <input type="text" id="user-fullname" name="fullName" required maxlength="100" placeholder="Enter full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="user-login-id">Login ID *</label>
+                        <input type="text" id="user-login-id" name="loginId" required maxlength="50" placeholder="Unique login ID" pattern="[a-zA-Z0-9_]{3,50}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="user-password">Password *</label>
+                        <input type="password" id="user-password" name="password" required minlength="6" placeholder="Min 6 characters" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="user-confirm-password">Confirm Password *</label>
+                        <input type="password" id="user-confirm-password" name="confirmPassword" required minlength="6" placeholder="Confirm password" autocomplete="new-password">
+                    </div>
+                </div>
+                <fieldset class="permission-fieldset">
+                    <legend>Permissions (Checkbox Matrix)</legend>
+                    <div class="permission-grid">
+                        <label class="permission-item">
+                            <input type="checkbox" name="permView" value="view" id="perm-view">
+                            <span class="perm-label">
+                                <strong>View Only</strong>
+                                <small>Read-only access to all data</small>
+                            </span>
+                        </label>
+                        <label class="permission-item">
+                            <input type="checkbox" name="permAddCollection" value="addCollection" id="perm-add-collection">
+                            <span class="perm-label">
+                                <strong>Add Collection</strong>
+                                <small>Record payments and collections</small>
+                            </span>
+                        </label>
+                        <label class="permission-item">
+                            <input type="checkbox" name="permEditRecords" value="editRecords" id="perm-edit-records">
+                            <span class="perm-label">
+                                <strong>Edit Records</strong>
+                                <small>Add/Edit borrowers and loans</small>
+                            </span>
+                        </label>
+                        <label class="permission-item">
+                            <input type="checkbox" name="permAddLateFine" value="addLateFine" id="perm-add-late-fine">
+                            <span class="perm-label">
+                                <strong>Add Late Fines</strong>
+                                <small>Apply late fines to loans</small>
+                            </span>
+                        </label>
+                        <label class="permission-item">
+                            <input type="checkbox" name="permDeleteLoan" value="deleteLoan" id="perm-delete-loan">
+                            <span class="perm-label">
+                                <strong>Delete Loans</strong>
+                                <small>Permanently delete loans (Loan Manager)</small>
+                            </span>
+                        </label>
+                    </div>
+                </fieldset>
+                <div class="form-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="user-active" name="isActive" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Account Active</span>
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="modal-delete-confirm" role="dialog" aria-modal="true" aria-labelledby="modal-delete-title" hidden>
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-container modal-sm">
+            <header class="modal-header danger">
+                <h3 id="modal-delete-title">⚠️ Confirm Deletion</h3>
+            </header>
+            <div class="modal-body">
+                <div class="delete-warning" aria-live="polite">
+                    <p><strong>This action cannot be undone!</strong></p>
+                    <p>All associated payments, fines, and history will be permanently deleted.</p>
+                </div>
+                <div class="delete-details" id="delete-details">
+                    <div class="detail-row"><span>Loan ID:</span> <strong id="del-loan-id">-</strong></div>
+                    <div class="detail-row"><span>Borrower:</span> <strong id="del-borrower">-</strong></div>
+                    <div class="detail-row"><span>Principal:</span> <strong id="del-principal">-</strong></div>
+                    <div class="detail-row"><span>Outstanding:</span> <strong id="del-outstanding" class="text-danger">-</strong></div>
+                    <div class="detail-row"><span>Status:</span> <strong id="del-status">-</strong></div>
+                </div>
+                <div class="delete-unlock">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="delete-confirm-checkbox" disabled>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">I understand this is permanent <span id="unlock-timer">(1.2s)</span></span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                <button type="button" class="btn btn-danger" id="btn-confirm-delete" disabled>Delete Permanently</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal" id="modal-change-password" role="dialog" aria-modal="true" aria-labelledby="modal-change-pwd-title" hidden>
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-container modal-sm">
+            <header class="modal-header">
+                <h3 id="modal-change-pwd-title">🔐 Change Password</h3>
+                <button class="modal-close" aria-label="Close modal">✕</button>
+            </header>
+            <form id="form-change-password" class="modal-form" novalidate>
+                <div class="form-group">
+                    <label for="current-password">Current Password *</label>
+                    <input type="password" id="current-password" name="currentPassword" required autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <label for="new-password">New Password *</label>
+                    <input type="password" id="new-password" name="newPassword" required minlength="6" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="confirm-new-password">Confirm New Password *</label>
+                    <input type="password" id="confirm-new-password" name="confirmNewPassword" required minlength="6" autocomplete="new-password">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PDF Statement Preview Modal -->
+    <div class="modal" id="modal-pdf-preview" role="dialog" aria-modal="true" aria-labelledby="modal-pdf-title" hidden>
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-container modal-xl">
+            <header class="modal-header">
+                <h3 id="modal-pdf-title">📄 Customer Statement Preview</h3>
+                <button class="modal-close" aria-label="Close modal">✕</button>
+            </header>
+            <div class="modal-body" style="max-height:70vh; overflow:auto;">
+                <div id="pdf-preview-content"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary modal-close-btn">Close</button>
+                <button type="button" class="btn btn-primary" id="btn-download-pdf">📥 Download PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-label="Notifications"></div>
+
+    <!-- PWA Install Prompt -->
+    <div class="install-prompt" id="install-prompt" hidden role="dialog" aria-modal="true" aria-labelledby="install-title">
+        <div class="install-content">
+            <h3 id="install-title">📱 Install App</h3>
+            <p>Add Microfinance CRM to your home screen for offline access and native app experience.</p>
+            <div class="install-actions">
+                <button class="btn btn-secondary" id="btn-dismiss-install">Not Now</button>
+                <button class="btn btn-primary" id="btn-accept-install">Install</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script src="./app.js"></script>
+    <script src="./sheets-sync.js"></script>
+    <script>
+        // Initialize app when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.MicrofinanceCRM.init();
+        });
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            setTimeout(() => {
+                document.getElementById('install-prompt').hidden = false;
+            }, 10000);
+        });
+
+        document.getElementById('btn-accept-install')?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('install-prompt').hidden = true;
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        document.getElementById('btn-dismiss-install')?.addEventListener('click', () => {
+            document.getElementById('install-prompt').hidden = true;
+        });
+    </script>
+</body>
+</html>
