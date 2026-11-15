@@ -352,9 +352,9 @@ public without sharing class CrmImportService {
         return '';
     }
 
-    private static RowResult newRow(Integer number) {
+    private static RowResult newRow(Integer rowNumber) {
         RowResult rr = new RowResult();
-        rr.rowNumber = number;
+        rr.rowNumber = rowNumber;
         rr.status = 'OK';
         rr.action = '-';
         return rr;
