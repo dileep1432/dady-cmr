@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Fine_Date__c</fullName>
+    <label>Fine Date</label>
+    <description>When the fine was charged.</description>
+    <inlineHelpText>Date the fine was charged (DD-MM-YYYY in the app).</inlineHelpText>
+    <type>Date</type>
+    
+    <required>true</required>
+</CustomField>

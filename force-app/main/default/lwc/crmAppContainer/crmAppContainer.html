@@ -1,0 +1,37 @@
+<template>
+    <template lwc:if={booting}>
+        <div class="crm-wrap"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner></div>
+    </template>
+    <template lwc:elseif={isLoggedOut}>
+        <c-crm-login-portal onloggedin={handleLoggedIn}></c-crm-login-portal>
+        <p lwc:if={notice} class="crm-info slds-text-align_center">{notice}</p>
+    </template>
+    <template lwc:else>
+        <div class="crm-wrap">
+            <div class="crm-row-top slds-m-bottom_x-small">
+                <div>
+                    <div class="crm-card-title">Microfinance CRM</div>
+                    <div class="crm-muted">{userLine}</div>
+                </div>
+                <lightning-button variant="neutral" label="Log out" onclick={handleLogout}></lightning-button>
+            </div>
+
+            <template lwc:if={profileId}>
+                <c-customer-profile token={token} session={session} borrower-id={profileId} onback={handleBack} onsessionexpired={handleExpired}></c-customer-profile>
+            </template>
+            <template lwc:else>
+                <div class="crm-pills" role="group" aria-label="Sections">
+                    <template for:each={tabs} for:item="tab">
+                        <button key={tab.value} type="button" class="crm-pill" aria-pressed={tab.pressed} data-tab={tab.value} onclick={handleTab}>{tab.label}</button>
+                    </template>
+                </div>
+                <c-crm-customers-view lwc:if={isCustomers} token={token} session={session} onopenprofile={handleOpenProfile} onsessionexpired={handleExpired}></c-crm-customers-view>
+                <c-daily-loans-view lwc:if={isDaily} token={token} session={session} onopenprofile={handleOpenProfile} onsessionexpired={handleExpired}></c-daily-loans-view>
+                <c-weekly-loans-view lwc:if={isWeekly} token={token} session={session} onopenprofile={handleOpenProfile} onsessionexpired={handleExpired}></c-weekly-loans-view>
+                <c-loan-delete-manager lwc:if={isDelete} token={token} session={session} onsessionexpired={handleExpired}></c-loan-delete-manager>
+                <c-excel-and-sheets-sync lwc:if={isData} token={token} session={session} onsessionexpired={handleExpired}></c-excel-and-sheets-sync>
+                <c-super-admin-user-panel lwc:if={isUsers} token={token} session={session} onsessionexpired={handleExpired}></c-super-admin-user-panel>
+            </template>
+        </div>
+    </template>
+</template>

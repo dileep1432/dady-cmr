@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Loan_Account__c</fullName>
+    <label>Loan Account</label>
+    <description>Loan this fine was charged on.</description>
+    <inlineHelpText>Loan being fined.</inlineHelpText>
+    <type>Lookup</type>
+    <referenceTo>Loan_Account__c</referenceTo><relationshipLabel>Late Fines</relationshipLabel><relationshipName>Late_Fines</relationshipName><deleteConstraint>Restrict</deleteConstraint>
+    <required>true</required>
+</CustomField>

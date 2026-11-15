@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Auto_Sync__c</fullName>
+    <label>Auto Sync</label>
+    <description>Push new/changed records to Google Sheets automatically.</description>
+    <inlineHelpText>Push changes to Google Sheets automatically.</inlineHelpText>
+    <type>Checkbox</type>
+    <defaultValue>false</defaultValue>
+    
+</CustomField>

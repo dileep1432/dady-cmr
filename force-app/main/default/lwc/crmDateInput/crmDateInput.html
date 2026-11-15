@@ -1,0 +1,23 @@
+<template>
+    <lightning-input
+        label={label}
+        type="text"
+        value={text}
+        placeholder="DD-MM-YYYY"
+        maxlength="10"
+        inputmode="numeric"
+        required={required}
+        disabled={disabled}
+        field-level-help="Format: DD-MM-YYYY"
+        onchange={handleInput}
+        onblur={handleBlur}
+    ></lightning-input>
+    <div lwc:if={error} class="slds-text-color_error slds-text-body_small" role="alert">{error}</div>
+    <lightning-button
+        lwc:if={showToday}
+        variant="base"
+        label="Today"
+        onclick={handleToday}
+        disabled={disabled}
+    ></lightning-button>
+</template>

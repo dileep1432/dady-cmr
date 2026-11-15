@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Can_Add_Collection__c</fullName>
+    <label>Can Add Collection</label>
+    <description>Allows recording payments.</description>
+    <inlineHelpText>Allow this user to record collections.</inlineHelpText>
+    <type>Checkbox</type>
+    <defaultValue>false</defaultValue>
+    
+</CustomField>

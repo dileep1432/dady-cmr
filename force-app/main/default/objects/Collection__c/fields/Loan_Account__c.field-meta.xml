@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Loan_Account__c</fullName>
+    <label>Loan Account</label>
+    <description>Loan this payment belongs to.</description>
+    <inlineHelpText>Loan receiving this payment.</inlineHelpText>
+    <type>Lookup</type>
+    <referenceTo>Loan_Account__c</referenceTo><relationshipLabel>Collections</relationshipLabel><relationshipName>Collections</relationshipName><deleteConstraint>Restrict</deleteConstraint>
+    <required>true</required>
+</CustomField>

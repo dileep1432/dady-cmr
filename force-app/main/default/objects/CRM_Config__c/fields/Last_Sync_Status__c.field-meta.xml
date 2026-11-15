@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last_Sync_Status__c</fullName>
+    <label>Last Sync Status</label>
+    <description>Result of the last Google Sheets sync.</description>
+    <inlineHelpText>Managed by the app.</inlineHelpText>
+    <type>Text</type>
+    <length>255</length>
+    
+</CustomField>

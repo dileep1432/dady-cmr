@@ -1,0 +1,27 @@
+<template>
+    <div class="crm-wrap">
+        <div class="crm-toolbar">
+            <lightning-input type="search" label="Search name, S.No or mobile" value={search} onchange={handleSearch}></lightning-input>
+            <lightning-button lwc:if={canEdit} variant="brand" label="Add Customer" icon-name="utility:add" onclick={handleAdd}></lightning-button>
+        </div>
+        <div lwc:if={error} class="crm-error" role="alert">{error}</div>
+        <lightning-spinner lwc:if={loading} alternative-text="Loading" size="small"></lightning-spinner>
+        <template for:each={displayRows} for:item="c">
+            <div key={c.id} class="crm-card">
+                <div class="crm-row-top">
+                    <div>
+                        <a class="crm-card-title" href="#" data-borrower={c.id} onclick={handleOpen}>{c.name}</a>
+                        <div class="crm-muted">S.No {c.sNo} &middot; {c.location}</div>
+                        <a lwc:if={c.telHref} class="crm-tel" href={c.telHref}>&#128222; {c.mobile}</a>
+                    </div>
+                    <div class="slds-text-align_right">
+                        <div class="crm-amount crm-due">{c.outstandingText}</div>
+                        <div class="crm-muted">{c.loanSummary}</div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <p lwc:if={noRows} class="crm-info">No customers found.</p>
+        <c-crm-borrower-modal lwc:if={showAdd} token={token} onclose={handleClose} onsaved={handleSaved}></c-crm-borrower-modal>
+    </div>
+</template>

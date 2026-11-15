@@ -1,0 +1,43 @@
+<template>
+    <div class="crm-wrap">
+        <p class="crm-info">Deleting a loan permanently removes the loan together with all of its payments and fines.</p>
+        <div class="crm-toolbar">
+            <lightning-input type="search" label="Search loan code, name or mobile" value={search} onchange={handleSearch}></lightning-input>
+        </div>
+        <div lwc:if={error} class="crm-error" role="alert">{error}</div>
+        <lightning-spinner lwc:if={loading} alternative-text="Loading" size="small"></lightning-spinner>
+        <template for:each={displayRows} for:item="l">
+            <div key={l.id} class="crm-card">
+                <div class="crm-row-top">
+                    <div>
+                        <div class="crm-card-title">{l.borrowerName}</div>
+                        <div class="crm-muted">S.No {l.sNo} &middot; Loan {l.loanCode} &middot; {l.repaymentType} &middot; {l.status}</div>
+                        <div class="crm-muted">Principal {l.principalText} &middot; Paid {l.paidText} &middot; Due {l.outstandingText}</div>
+                    </div>
+                    <lightning-button variant="destructive-text" label="Delete" data-id={l.id} onclick={handleDelete}></lightning-button>
+                </div>
+            </div>
+        </template>
+        <p lwc:if={noRows} class="crm-info">No loans found.</p>
+
+        <template lwc:if={target}>
+            <section role="alertdialog" tabindex="-1" aria-modal="true" aria-label="Confirm loan deletion" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header"><h2 class="slds-modal__title">Delete this loan?</h2></header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <p class="crm-card-title">{target.borrowerName} &middot; Loan {target.loanCode}</p>
+                        <p class="slds-m-top_small">This permanently deletes the loan, its payments and its fines. It cannot be undone.</p>
+                        <div lwc:if={deleteError} class="crm-error" role="alert">{deleteError}</div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <div class="crm-modal-actions">
+                            <lightning-button label="Cancel" onclick={handleCancel} disabled={deleting}></lightning-button>
+                            <lightning-button variant="destructive" label={confirmLabel} onclick={handleConfirm} disabled={confirmDisabled}></lightning-button>
+                        </div>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </div>
+</template>

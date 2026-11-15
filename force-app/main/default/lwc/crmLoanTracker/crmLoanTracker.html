@@ -1,0 +1,80 @@
+<template>
+    <div class="crm-wrap">
+        <div class="crm-pills" role="group" aria-label="Loan views">
+            <template for:each={tabs} for:item="tab">
+                <button key={tab.value} type="button" class="crm-pill" aria-pressed={tab.pressed} data-view={tab.value} onclick={handleTab}>{tab.label}</button>
+            </template>
+        </div>
+
+        <template lwc:if={isAudit}>
+            <div class="crm-toolbar">
+                <c-crm-date-input label="From (DD-MM-YYYY)" value={auditFrom} onchange={handleFrom}></c-crm-date-input>
+                <c-crm-date-input label="To (DD-MM-YYYY)" value={auditTo} onchange={handleTo}></c-crm-date-input>
+                <lightning-button label="Today" onclick={handleAuditToday}></lightning-button>
+                <lightning-button variant="brand" label="Show" onclick={loadAudit}></lightning-button>
+            </div>
+            <div lwc:if={error} class="crm-error" role="alert">{error}</div>
+            <div class="crm-stat slds-m-bottom_small">
+                <div class="crm-stat-label">Collected in range ({auditCount} payments)</div>
+                <div class="crm-stat-value">{auditTotalText}</div>
+            </div>
+            <p lwc:if={auditTruncated} class="crm-info">Showing the first 2,000 payments. Narrow the date range to see the rest.</p>
+            <template for:each={auditRows} for:item="p">
+                <div key={p.id} class="crm-card">
+                    <div class="crm-row-top">
+                        <div>
+                            <a class="crm-card-title" href="#" data-borrower={p.borrowerId} onclick={handleOpenProfile}>{p.borrowerName}</a>
+                            <div class="crm-muted">S.No {p.sNo} &middot; Loan {p.loanCode}</div>
+                        </div>
+                        <div class="crm-amount crm-ok">{p.amountText}</div>
+                    </div>
+                    <div class="crm-muted">{p.dateText} &middot; {p.method} <span lwc:if={p.referenceNo}>&middot; Ref {p.referenceNo}</span> <span lwc:if={p.collectedBy}>&middot; by {p.collectedBy}</span></div>
+                </div>
+            </template>
+            <p lwc:if={noAudit} class="crm-info">No payments in this range.</p>
+        </template>
+
+        <template lwc:else>
+            <div class="crm-toolbar">
+                <lightning-input type="search" label="Search name, S.No, mobile or loan" value={search} onchange={handleSearch}></lightning-input>
+                <lightning-button label="Refresh" icon-name="utility:refresh" onclick={load}></lightning-button>
+            </div>
+            <div lwc:if={error} class="crm-error" role="alert">{error}</div>
+            <div class="crm-stats">
+                <div class="crm-stat"><div class="crm-stat-label">Loans shown</div><div class="crm-stat-value">{rowCount}</div></div>
+                <div class="crm-stat"><div class="crm-stat-label">Outstanding</div><div class="crm-stat-value">{outstandingText}</div></div>
+                <div class="crm-stat"><div class="crm-stat-label">{periodLabel}</div><div class="crm-stat-value">{periodPaidText}</div></div>
+            </div>
+            <p class="crm-muted">{periodRangeText}</p>
+            <p lwc:if={truncated} class="crm-info">Showing the first 2,000 loans. Use search to narrow down.</p>
+            <lightning-spinner lwc:if={loading} alternative-text="Loading" size="small"></lightning-spinner>
+            <template for:each={displayRows} for:item="row">
+                <div key={row.id} class="crm-card">
+                    <div class="crm-row-top">
+                        <div>
+                            <a class="crm-card-title" href="#" data-borrower={row.borrowerId} onclick={handleOpenProfile}>{row.borrowerName}</a>
+                            <div class="crm-muted">S.No {row.sNo} &middot; Loan {row.loanCode} &middot; {row.location}</div>
+                            <a lwc:if={row.telHref} class="crm-tel" href={row.telHref}>&#128222; {row.mobile}</a>
+                        </div>
+                        <div class="slds-text-align_right">
+                            <div class="crm-amount crm-due">{row.outstandingText}</div>
+                            <div class="crm-muted">due</div>
+                            <span class={row.badgeClass}>{row.status}</span>
+                        </div>
+                    </div>
+                    <div class="crm-muted slds-m-top_x-small">Principal {row.principalText} &middot; Payable {row.payableText} &middot; Paid {row.paidText}</div>
+                    <div lwc:if={row.showPeriodPaid} class="crm-ok crm-amount">{periodPaidWord} {row.periodPaidText}</div>
+                    <div lwc:if={row.canCollect} class="crm-muted">Suggested installment {row.installmentText}</div>
+                    <div class="crm-actions">
+                        <lightning-button lwc:if={row.canCollect} variant="brand" label="Collect" data-id={row.id} onclick={handleCollect}></lightning-button>
+                        <lightning-button lwc:if={row.canFine} label="+ Fine" data-id={row.id} onclick={handleFine}></lightning-button>
+                    </div>
+                </div>
+            </template>
+            <p lwc:if={noRows} class="crm-info">Nothing to show here.</p>
+        </template>
+
+        <c-crm-payment-modal lwc:if={payLoan} token={token} loan={payLoan} onclose={closeModals} onsaved={handleSaved}></c-crm-payment-modal>
+        <c-crm-fine-modal lwc:if={fineLoan} token={token} loan={fineLoan} onclose={closeModals} onsaved={handleSaved}></c-crm-fine-modal>
+    </div>
+</template>

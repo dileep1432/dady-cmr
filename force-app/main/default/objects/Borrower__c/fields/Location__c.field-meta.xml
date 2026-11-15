@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Location__c</fullName>
+    <label>Location</label>
+    <description>Customer's area or address.</description>
+    <inlineHelpText>Area, village or address.</inlineHelpText>
+    <type>Text</type>
+    <length>150</length>
+    
+</CustomField>

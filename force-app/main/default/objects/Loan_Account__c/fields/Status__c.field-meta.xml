@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Status__c</fullName>
+    <label>Status</label>
+    <description>ACTIVE until fully paid, then COMPLETED. Maintained by Apex.</description>
+    <inlineHelpText>Set automatically from Outstanding Due.</inlineHelpText>
+    <type>Picklist</type>
+    <valueSet><restricted>true</restricted><valueSetDefinition><sorted>false</sorted><value><fullName>ACTIVE</fullName><default>true</default><label>ACTIVE</label></value><value><fullName>COMPLETED</fullName><default>false</default><label>COMPLETED</label></value></valueSetDefinition></valueSet>
+    
+</CustomField>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Can_Add_Fines__c</fullName>
+    <label>Can Add Fines</label>
+    <description>Allows adding late fines.</description>
+    <inlineHelpText>Allow this user to add late fines.</inlineHelpText>
+    <type>Checkbox</type>
+    <defaultValue>false</defaultValue>
+    
+</CustomField>

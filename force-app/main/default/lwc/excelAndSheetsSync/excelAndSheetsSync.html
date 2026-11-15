@@ -1,0 +1,51 @@
+<template>
+    <div class="crm-wrap">
+        <div class="crm-card">
+            <h3 class="slds-text-heading_small slds-m-bottom_small">Bulk upload (Excel / CSV)</h3>
+            <p class="crm-muted slds-m-bottom_small">Column headers are matched by name: S.No, Full Name, Mobile, Location, Notes (customers); S.No, Loan Code, Repayment Type, Principal, Disbursement Date (loans); Loan Code, Amount, Payment Date, Method, Reference No (collections); Loan Code, Fine Amount, Reason, Fine Date (fines). Dates use DD-MM-YYYY. Import customers before loans, and loans before payments and fines.</p>
+            <lightning-combobox label="What are you importing?" options={entityOptions} value={entity} onchange={handleEntity}></lightning-combobox>
+            <div class={dropClass} ondragover={handleDragOver} ondragleave={handleDragLeave} ondrop={handleDrop}>
+                <p>Drag and drop a .xlsx or .csv file here, or choose one:</p>
+                <input type="file" accept=".xlsx,.xls,.csv" class="slds-m-top_x-small" onchange={handleFile} />
+            </div>
+            <div lwc:if={fileName} class="crm-info">File: <strong>{fileName}</strong> &middot; {rowCountText}</div>
+            <lightning-combobox lwc:if={showSheetPicker} label="Sheet" options={sheetOptions} value={sheetName} onchange={handleSheet}></lightning-combobox>
+            <div lwc:if={uploadError} class="crm-error" role="alert">{uploadError}</div>
+            <div class="crm-actions">
+                <lightning-button label="1. Validate" onclick={handleValidate} disabled={validateDisabled}></lightning-button>
+                <lightning-button variant="brand" label="2. Import valid rows" onclick={handleImport} disabled={importDisabled}></lightning-button>
+            </div>
+            <p lwc:if={progress} class="crm-info">{progress}</p>
+            <div lwc:if={summary} class="crm-info"><strong>{summary}</strong></div>
+            <div lwc:if={hasProblems} class="crm-table-wrap slds-m-top_small">
+                <table class="crm-table">
+                    <thead><tr><th>Row</th><th>Status</th><th>Record</th><th>Message</th></tr></thead>
+                    <tbody>
+                        <template for:each={problemRows} for:item="p">
+                            <tr key={p.key}><td>{p.rowNumber}</td><td>{p.status}</td><td>{p.summary}</td><td>{p.message}</td></tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div lwc:if={isSuperAdmin} class="crm-card">
+            <h3 class="slds-text-heading_small slds-m-bottom_small">Google Sheets (live backup and sync)</h3>
+            <p class="crm-muted slds-m-bottom_small">Share the spreadsheet with the service account email (Editor). Tabs Customers, Loans, Payments and Fines are created automatically. The private key is write-only and never shown again.</p>
+            <lightning-input label="Spreadsheet ID or URL" value={sheetId} onchange={handleSheetId}></lightning-input>
+            <lightning-input label="Service account email" value={serviceEmail} onchange={handleServiceEmail}></lightning-input>
+            <lightning-textarea label={keyLabel} value={privateKey} onchange={handlePrivateKey} placeholder="-----BEGIN PRIVATE KEY-----"></lightning-textarea>
+            <lightning-input type="checkbox" label="Auto-sync every new or changed record" checked={autoSync} onchange={handleAutoSync}></lightning-input>
+            <div lwc:if={sheetsError} class="crm-error" role="alert">{sheetsError}</div>
+            <p lwc:if={lastSyncText} class="crm-muted slds-m-top_x-small">{lastSyncText}</p>
+            <div class="crm-actions">
+                <lightning-button variant="brand" label="Save Settings" onclick={handleSaveSettings} disabled={sheetsBusy}></lightning-button>
+                <lightning-button label="Test Connection" onclick={handleTest} disabled={sheetsBusy}></lightning-button>
+                <lightning-button label="Sync All Data to Google Sheet" onclick={handleSyncAll} disabled={sheetsBusy}></lightning-button>
+                <lightning-button label="Import from Google Sheet" onclick={handleImportSheet} disabled={sheetsBusy}></lightning-button>
+            </div>
+            <p lwc:if={sheetsInfo} class="crm-info">{sheetsInfo}</p>
+            <lightning-spinner lwc:if={sheetsBusy} alternative-text="Working" size="small"></lightning-spinner>
+        </div>
+    </div>
+</template>

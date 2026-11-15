@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Collection</label>
+    <pluralLabel>Collections</pluralLabel>
+    <description>The Collection object records each payment received against a loan account, with amount, payment date, method, reference number and who collected it. Collections roll up into the loan's Total Paid. Commonly used for daily and weekly collection tracking and audits.</description>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <sharingModel>ReadWrite</sharingModel>
+    <visibility>Public</visibility>
+    <nameField><label>Collection Ref</label><type>AutoNumber</type><displayFormat>COL-{000000}</displayFormat><startingNumber>1</startingNumber></nameField>
+    <enableSearch>true</enableSearch><enableReports>true</enableReports><enableActivities>false</enableActivities><enableHistory>true</enableHistory>
+</CustomObject>

@@ -1,0 +1,84 @@
+<template>
+    <div class="crm-wrap">
+        <lightning-button variant="base" label="&#8592; Back" onclick={handleBack}></lightning-button>
+        <lightning-spinner lwc:if={loading} alternative-text="Loading" size="small"></lightning-spinner>
+        <div lwc:if={error} class="crm-error" role="alert">{error}</div>
+        <template lwc:if={profile}>
+            <div class="crm-card slds-m-top_small">
+                <div class="crm-row-top">
+                    <div>
+                        <div class="slds-text-heading_medium">{profile.borrower.name}</div>
+                        <div class="crm-muted">S.No {profile.borrower.sNo} &middot; {profile.borrower.location}</div>
+                        <a lwc:if={telLink} class="crm-tel" href={telLink}>&#128222; {profile.borrower.mobile}</a>
+                        <p lwc:if={profile.borrower.notes} class="slds-m-top_x-small">{profile.borrower.notes}</p>
+                    </div>
+                </div>
+                <div class="crm-actions">
+                    <lightning-button lwc:if={canEdit} label="Edit" onclick={handleEdit}></lightning-button>
+                    <lightning-button lwc:if={canEdit} label="Issue Loan" variant="brand" onclick={handleIssueLoan}></lightning-button>
+                    <lightning-button label="Download PDF Statement" icon-name="utility:download" onclick={handlePdf} disabled={pdfBusy}></lightning-button>
+                </div>
+            </div>
+
+            <div class="crm-stats">
+                <div class="crm-stat"><div class="crm-stat-label">Total Payable</div><div class="crm-stat-value">{payableText}</div></div>
+                <div class="crm-stat"><div class="crm-stat-label">Total Paid</div><div class="crm-stat-value crm-ok">{paidText}</div></div>
+                <div class="crm-stat"><div class="crm-stat-label">Outstanding</div><div class="crm-stat-value crm-due">{outstandingText}</div></div>
+                <div class="crm-stat"><div class="crm-stat-label">Total Late Fines</div><div class="crm-stat-value">{finesText}</div></div>
+            </div>
+
+            <h3 class="slds-text-heading_small slds-m-vertical_small">Loans</h3>
+            <template for:each={loanRows} for:item="l">
+                <div key={l.id} class="crm-card">
+                    <div class="crm-row-top">
+                        <div>
+                            <div class="crm-card-title">Loan {l.loanCode} &middot; {l.repaymentType}</div>
+                            <div class="crm-muted">Disbursed {l.dateText} &middot; Rate {l.interestRate}% &middot; Principal {l.principalText}</div>
+                        </div>
+                        <span class={l.badgeClass}>{l.status}</span>
+                    </div>
+                    <div class="crm-muted">Payable {l.payableText} &middot; Paid {l.paidText}</div>
+                    <div class="crm-amount crm-due">Outstanding {l.outstandingText}</div>
+                    <div class="crm-actions">
+                        <lightning-button lwc:if={l.canCollect} variant="brand" label="Collect" data-id={l.id} onclick={handleCollect}></lightning-button>
+                        <lightning-button lwc:if={l.canFine} label="+ Fine" data-id={l.id} onclick={handleFine}></lightning-button>
+                        <lightning-button lwc:if={l.canEdit} label="Edit" data-id={l.id} onclick={handleEditLoan}></lightning-button>
+                    </div>
+                </div>
+            </template>
+            <p lwc:if={noLoans} class="crm-info">No loans yet.</p>
+
+            <h3 class="slds-text-heading_small slds-m-vertical_small">Late Fines</h3>
+            <div class="crm-card crm-table-wrap">
+                <table class="crm-table">
+                    <thead><tr><th>Date Charged</th><th>Loan S.No</th><th class="crm-num">Amount</th><th>Reason</th></tr></thead>
+                    <tbody>
+                        <template for:each={fineRows} for:item="f">
+                            <tr key={f.id}><td>{f.dateText}</td><td>{f.loanCode}</td><td class="crm-num">{f.amountText}</td><td>{f.reason}</td></tr>
+                        </template>
+                    </tbody>
+                </table>
+                <p lwc:if={noFines} class="crm-muted">No late fines.</p>
+            </div>
+
+            <h3 class="slds-text-heading_small slds-m-vertical_small">Payment History</h3>
+            <div class="crm-card crm-table-wrap">
+                <table class="crm-table">
+                    <thead><tr><th>Date</th><th>Loan S.No</th><th class="crm-num">Amount</th><th>Method</th><th>Ref</th></tr></thead>
+                    <tbody>
+                        <template for:each={paymentRows} for:item="p">
+                            <tr key={p.id}><td>{p.dateText}</td><td>{p.loanCode}</td><td class="crm-num">{p.amountText}</td><td>{p.method}</td><td>{p.referenceNo}</td></tr>
+                        </template>
+                    </tbody>
+                </table>
+                <p lwc:if={noPayments} class="crm-muted">No payments yet.</p>
+            </div>
+        </template>
+
+        <c-crm-borrower-modal lwc:if={showEdit} token={token} borrower={profile.borrower} onclose={closeModals} onsaved={handleSaved}></c-crm-borrower-modal>
+        <c-crm-issue-loan-modal lwc:if={showIssue} token={token} borrower-id={borrowerId} borrower-name={profile.borrower.name} onclose={closeModals} onsaved={handleSaved}></c-crm-issue-loan-modal>
+        <c-crm-issue-loan-modal lwc:if={editLoan} token={token} loan={editLoan} borrower-name={profile.borrower.name} onclose={closeModals} onsaved={handleSaved}></c-crm-issue-loan-modal>
+        <c-crm-payment-modal lwc:if={payLoan} token={token} loan={payLoan} onclose={closeModals} onsaved={handleSaved}></c-crm-payment-modal>
+        <c-crm-fine-modal lwc:if={fineLoan} token={token} loan={fineLoan} onclose={closeModals} onsaved={handleSaved}></c-crm-fine-modal>
+    </div>
+</template>

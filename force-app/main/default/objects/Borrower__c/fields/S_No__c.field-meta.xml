@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>S_No__c</fullName>
+    <label>S No</label>
+    <description>Customer serial number such as 1, 2, 8 or W009. Leading zeros are stripped.</description>
+    <inlineHelpText>Unique serial number, e.g. 12 or W009.</inlineHelpText>
+    <type>Text</type>
+    <length>40</length><unique>true</unique><caseSensitive>false</caseSensitive><externalId>true</externalId>
+    <required>true</required>
+</CustomField>

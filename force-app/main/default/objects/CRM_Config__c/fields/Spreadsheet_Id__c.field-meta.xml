@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Spreadsheet_Id__c</fullName>
+    <label>Spreadsheet ID</label>
+    <description>Google Spreadsheet ID used for live sync.</description>
+    <inlineHelpText>ID from the Google Sheet URL (between /d/ and /edit).</inlineHelpText>
+    <type>Text</type>
+    <length>120</length>
+    
+</CustomField>

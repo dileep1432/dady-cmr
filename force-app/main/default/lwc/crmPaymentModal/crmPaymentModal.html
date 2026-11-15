@@ -1,0 +1,24 @@
+<template>
+    <section role="dialog" tabindex="-1" aria-modal="true" aria-label="Record Payment" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            <header class="slds-modal__header"><h2 class="slds-modal__title">Record Payment</h2></header>
+            <div class="slds-modal__content slds-p-around_medium">
+                <p class="crm-card-title">{loan.borrowerName}</p>
+                <p class="crm-muted">Loan {loan.loanCode} &middot; {loan.repaymentType} &middot; Outstanding {outstandingText}</p>
+                <p class="crm-muted slds-m-bottom_small">{hintText}</p>
+                <lightning-input type="number" step="0.01" min="0.01" label="Amount (&#8377;)" value={amount} onchange={handleAmount} required></lightning-input>
+                <c-crm-date-input label="Payment Date" value={paymentDate} onchange={handleDate} show-today required></c-crm-date-input>
+                <lightning-combobox label="Payment Method" options={methodOptions} value={method} onchange={handleMethod}></lightning-combobox>
+                <lightning-input label="Reference No (optional)" value={referenceNo} onchange={handleReference}></lightning-input>
+                <div lwc:if={error} class="crm-error" role="alert">{error}</div>
+            </div>
+            <footer class="slds-modal__footer">
+                <div class="crm-modal-actions">
+                    <lightning-button label="Cancel" onclick={handleCancel} disabled={busy}></lightning-button>
+                    <lightning-button variant="brand" label="Save Payment" onclick={handleSave} disabled={busy}></lightning-button>
+                </div>
+            </footer>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

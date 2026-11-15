@@ -1,0 +1,63 @@
+<apex:page controller="CustomerStatementController" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" cache="false">
+<html>
+<head>
+<style>
+    @page { size: A4; margin: 18mm 14mm; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; }
+    h1 { font-size: 18px; margin: 0 0 8px 0; }
+    h2 { font-size: 13px; margin: 18px 0 6px 0; border-bottom: 1px solid #444; padding-bottom: 3px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #eeeeee; text-align: left; padding: 5px; border: 1px solid #999; }
+    td { padding: 5px; border: 1px solid #bbb; vertical-align: top; }
+    .kv td { border: none; padding: 2px 4px; }
+    .kv td.k { width: 90px; font-weight: bold; }
+    .num { text-align: right; }
+    .none { color: #666; font-style: italic; }
+</style>
+</head>
+<body>
+<apex:outputPanel rendered="{!NOT(ISBLANK(errorMessage))}"><p>{!errorMessage}</p></apex:outputPanel>
+<apex:outputPanel rendered="{!ISBLANK(errorMessage)}">
+    <h1>{!customerName}</h1>
+    <table class="kv">
+        <tr><td class="k">S.No</td><td>{!sNo}</td></tr>
+        <tr><td class="k">Mobile</td><td>{!mobile}</td></tr>
+        <tr><td class="k">Location</td><td>{!location}</td></tr>
+        <tr><td class="k">Total Paid</td><td>{!totalPaid}</td></tr>
+        <tr><td class="k">Outstanding</td><td>{!totalOutstanding}</td></tr>
+        <tr><td class="k">Late Fines</td><td>{!totalFines}</td></tr>
+    </table>
+
+    <h2>Loans</h2>
+    <table>
+        <tr><th>Loan S.No</th><th>Type</th><th>Disbursed</th><th class="num">Principal</th><th class="num">Payable</th><th class="num">Paid</th><th class="num">Outstanding</th><th>Status</th></tr>
+        <apex:repeat value="{!loanLines}" var="l">
+            <tr><td>{!l.code}</td><td>{!l.repayType}</td><td>{!l.disbursed}</td><td class="num">{!l.principal}</td><td class="num">{!l.payable}</td><td class="num">{!l.paid}</td><td class="num">{!l.outstanding}</td><td>{!l.status}</td></tr>
+        </apex:repeat>
+    </table>
+
+    <h2>Late Fines</h2>
+    <apex:outputPanel rendered="{!fineLines.size == 0}"><p class="none">No late fines.</p></apex:outputPanel>
+    <apex:outputPanel rendered="{!fineLines.size > 0}">
+        <table>
+            <tr><th>Date Charged (When)</th><th>Loan S.No</th><th class="num">Fine Amount</th><th>Reason (Why)</th></tr>
+            <apex:repeat value="{!fineLines}" var="f">
+                <tr><td>{!f.fineDate}</td><td>{!f.code}</td><td class="num">{!f.amount}</td><td>{!f.reason}</td></tr>
+            </apex:repeat>
+        </table>
+    </apex:outputPanel>
+
+    <h2>Payment History</h2>
+    <apex:outputPanel rendered="{!payLines.size == 0}"><p class="none">No payments recorded.</p></apex:outputPanel>
+    <apex:outputPanel rendered="{!payLines.size > 0}">
+        <table>
+            <tr><th>Date</th><th>Loan S.No</th><th class="num">Amount</th><th>Method</th><th>Reference</th></tr>
+            <apex:repeat value="{!payLines}" var="p">
+                <tr><td>{!p.payDate}</td><td>{!p.code}</td><td class="num">{!p.amount}</td><td>{!p.method}</td><td>{!p.reference}</td></tr>
+            </apex:repeat>
+        </table>
+    </apex:outputPanel>
+</apex:outputPanel>
+</body>
+</html>
+</apex:page>

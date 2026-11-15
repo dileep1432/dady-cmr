@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Loan Account</label>
+    <pluralLabel>Loan Accounts</pluralLabel>
+    <description>The Loan Account object tracks a loan issued to a borrower as a child of Borrower. It records repayment type (daily or weekly), principal, auto-set interest rate, disbursement date and status. Total Payable, Total Paid and Outstanding Due are calculated automatically. Commonly used for collections tracking.</description>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <sharingModel>ControlledByParent</sharingModel>
+    <visibility>Public</visibility>
+    <nameField><label>Loan Ref</label><type>AutoNumber</type><displayFormat>LN-{00000}</displayFormat><startingNumber>1</startingNumber></nameField>
+    <enableSearch>true</enableSearch><enableReports>true</enableReports><enableActivities>false</enableActivities><enableHistory>true</enableHistory>
+</CustomObject>

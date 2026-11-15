@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Total_Payable__c</fullName>
+    <label>Total Payable</label>
+    <description>Principal x (1 + rate/100) plus the sum of late fines. Maintained by Apex.</description>
+    <inlineHelpText>Principal plus interest plus late fines.</inlineHelpText>
+    <type>Currency</type>
+    <precision>18</precision><scale>2</scale>
+    
+</CustomField>

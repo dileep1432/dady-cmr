@@ -1,0 +1,56 @@
+<template>
+    <div class="crm-wrap">
+        <div class="crm-toolbar">
+            <lightning-button variant="brand" label="New Staff User" icon-name="utility:add" onclick={handleNew}></lightning-button>
+        </div>
+        <div lwc:if={error} class="crm-error" role="alert">{error}</div>
+        <lightning-spinner lwc:if={loading} alternative-text="Loading" size="small"></lightning-spinner>
+        <template for:each={displayRows} for:item="u">
+            <div key={u.id} class="crm-card">
+                <div class="crm-row-top">
+                    <div>
+                        <div class="crm-card-title">{u.fullName}</div>
+                        <div class="crm-muted">Login: {u.loginId} &middot; {u.role} &middot; Last login {u.lastLoginText}</div>
+                        <div class="crm-muted">{u.permissionText}</div>
+                    </div>
+                    <span class={u.badgeClass}>{u.statusText}</span>
+                </div>
+                <div class="crm-actions">
+                    <lightning-button label="Edit" data-id={u.id} onclick={handleEdit}></lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={form}>
+            <section role="dialog" tabindex="-1" aria-modal="true" aria-label="Staff user" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header"><h2 class="slds-modal__title">{formTitle}</h2></header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-input label="Full Name" value={form.fullName} data-field="fullName" onchange={handleField} required></lightning-input>
+                        <lightning-input label="Login ID" value={form.loginId} data-field="loginId" onchange={handleField} required></lightning-input>
+                        <lightning-input type="password" label={passwordLabel} value={form.password} data-field="password" onchange={handleField} autocomplete="new-password"></lightning-input>
+                        <lightning-combobox label="Role" options={roleOptions} value={form.role} data-field="role" onchange={handleCombo}></lightning-combobox>
+                        <lightning-input type="checkbox" label="Account is active" checked={form.isActive} data-field="isActive" onchange={handleCheck}></lightning-input>
+                        <p class="slds-text-title slds-m-top_small">Permissions (Super Admin always has all)</p>
+                        <div class="crm-perm-grid">
+                            <lightning-input type="checkbox" label="View Only" checked={form.canViewOnly} data-field="canViewOnly" onchange={handleCheck}></lightning-input>
+                            <lightning-input type="checkbox" label="Add Collection" checked={form.canAddCollection} data-field="canAddCollection" onchange={handleCheck}></lightning-input>
+                            <lightning-input type="checkbox" label="Edit Records (Customers/Loans)" checked={form.canEditRecords} data-field="canEditRecords" onchange={handleCheck}></lightning-input>
+                            <lightning-input type="checkbox" label="Add Late Fines" checked={form.canAddFines} data-field="canAddFines" onchange={handleCheck}></lightning-input>
+                            <lightning-input type="checkbox" label="Delete Loans" checked={form.canDeleteLoans} data-field="canDeleteLoans" onchange={handleCheck}></lightning-input>
+                        </div>
+                        <p class="crm-muted slds-m-top_x-small">View Only overrides all other write permissions.</p>
+                        <div lwc:if={formError} class="crm-error" role="alert">{formError}</div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <div class="crm-modal-actions">
+                            <lightning-button label="Cancel" onclick={handleCancel} disabled={saving}></lightning-button>
+                            <lightning-button variant="brand" label="Save" onclick={handleSave} disabled={saving}></lightning-button>
+                        </div>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </div>
+</template>

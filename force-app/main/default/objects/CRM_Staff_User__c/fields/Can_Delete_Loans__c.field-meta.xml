@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Can_Delete_Loans__c</fullName>
+    <label>Can Delete Loans</label>
+    <description>Allows access to the Loan Manager (Delete) tab.</description>
+    <inlineHelpText>Allow this user to permanently delete loans.</inlineHelpText>
+    <type>Checkbox</type>
+    <defaultValue>false</defaultValue>
+    
+</CustomField>
